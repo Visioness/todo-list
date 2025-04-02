@@ -5,6 +5,7 @@ export default class Task {
     dueDate = "-",
     priority = "normal",
   ) {
+    this.id = crypto.randomUUID();
     this.title = title;
     this.description = description;
     this.dueDate = dueDate;
