@@ -1,8 +1,14 @@
 export default class Display {
   constructor(handler) {
     this.handler = handler;
-    this.container = this.createContainer();
+    this.container = document.querySelector(".container");
+    this.content = this.container.querySelector(".projects");
+    this.main = document.querySelector("main");
+    this.projectDialog = document.querySelector("#project-dialog");
+    this.taskDialog = document.querySelector("#task-dialog");
+    
     this.handleClickEvents();
+    this.handleDialogs();
   }
   
   handleClickEvents() {
@@ -12,20 +18,16 @@ export default class Display {
       const project = event.target.closest(".project");
       let taskId, projectId;
       
-      if (task) {
-        taskId = task.dataset.id;
-      }
-
-      if (project) {
-        projectId = project.dataset.id;
-      }
+      if (task) taskId = task.dataset.id;
+      if (project) projectId = project.dataset.id;
 
       if (element.id === "add-project") {
         // Add Project
-        this.handler.project.create("New Project", "Project Description");
+        this.projectDialog.showModal();
       } else if (element.classList.contains("add") && project) {
         // Add Task
-        this.handler.task.create(projectId, "New Task", "Task Description", "Task Due Date", "Task Priority");
+        this.taskDialog.querySelector("input[name='project-id']").value = projectId;
+        this.taskDialog.showModal();
       } else if (element.classList.contains("delete") && task) {
         // Delete Task
         this.handler.task.delete(projectId, taskId);
@@ -36,79 +38,94 @@ export default class Display {
     });
   }
   
-  resetContainer() {
-    // IMPROVE
-    document.querySelector("main").innerHTML = "";
-    this.container = this.createContainer();
-    this.handleClickEvents();
+  handleDialogs() {
+    const projectForm = this.projectDialog.querySelector("form");
+    const taskForm = this.taskDialog.querySelector("form");
+    
+    [taskForm, projectForm].forEach(form => {
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        this.handleFormSubmit(form);
+      });
+
+      this.handleFormCancel(form);
+    });
   }
 
-  createContainer() {
-    const container = this.createElement("div", "container projects", "projects");
-    const containerTitle = this.createElement("h2", "container-title", "projects-title");
-    containerTitle.textContent = "Projects";
-
-    const addProject = this.createElement("button", "button add", "add-project");
-    addProject.textContent = "Add Project";
-
-    container.append(addProject, containerTitle);
-    document.querySelector("main").append(container);
+  handleFormSubmit(form) {
+    let title, description, dueDate, priority, projectId;
     
-    return container;
+    title = form.elements.title.value;
+    description = form.elements.description.value;
+    
+    if (form.id === "project-form") {
+      this.handler.project.create(title, description);
+      this.projectDialog.close();
+    } else if (form.id === "task-form") {
+      dueDate = form.elements["due-date"].value;
+      priority = form.elements.priority.value;
+      projectId = this.taskDialog.querySelector("input[name='project-id']").value;
+      this.handler.task.create(projectId, title, description, dueDate, priority);
+      this.taskDialog.close();
+    }
+  }
+
+  handleFormCancel(form) {
+    const formDialog = form.closest(".form-dialog");
+    const cancelButton = form.querySelector(".cancel-form");
+    cancelButton.addEventListener("click", () => formDialog.close());
+  }
+  
+  resetContent() {
+    this.content.innerHTML = "";
   }
 
   renderProjects(projects) {
-    this.resetContainer();
+    this.resetContent();
 
     for (const id in projects) {
       const projectElement = this.createProject(projects[id]);
-      this.container.append(projectElement);
+      this.content.append(projectElement);
     }
   }
   
   createProject(project) {
     const projectElement = this.createElement("div", "project");
-    projectElement.dataset.id = project.id;
-    
     const projectTitle = this.createElement("h3", "project-title");
-    projectTitle.textContent = project.title;
-
     const projectDescription = this.createElement("p", "project-description");
-    projectDescription.textContent = project.description;
-
     const projectTasks = this.createElement("ul", "project-tasks");
+    const deleteProject = this.createElement("button", "button delete");
+    const addTask = this.createElement("button", "button add");
+    
+    projectElement.dataset.id = project.id;
+    projectTitle.textContent = project.title;
+    projectDescription.textContent = project.description;
+    deleteProject.textContent = "Delete Project";
+    addTask.textContent = "Add Task"; 
+
     for (const id in project.tasks) {
       const task = this.createTask(project.tasks[id]);
       projectTasks.append(task);
     }
-    
-    const deleteProject = this.createElement("button", "button delete");
-    deleteProject.textContent = "Delete Project";
-
-    const addTask = this.createElement("button", "button add");
-    addTask.textContent = "Add Task"; 
-    
+        
     projectElement.append(addTask, deleteProject, projectTitle, projectDescription, projectTasks);
     return projectElement;
   }
 
   createTask(task) {
     const taskElement = this.createElement("li", "task");
+    const taskTitle = this.createElement("h4", "task-title");
+    const taskDescription = this.createElement("p", "task-description");
+    const taskDueDate = this.createElement("span", "task-due-date");
+    const taskPriority = this.createElement("span", "task-priority");
+    const deleteTask = this.createElement("button", "button delete");
+    
     taskElement.dataset.id = task.id;
 
-    const taskTitle = this.createElement("h4", "task-title");
     taskTitle.textContent = task.title;
-
-    const taskDescription = this.createElement("p", "task-description");
     taskDescription.textContent = task.description;
-
-    const taskDueDate = this.createElement("span", "task-due-date");
     taskDueDate.textContent = task.dueDate;
-
-    const taskPriority = this.createElement("span", "task-priority");
     taskPriority.textContent = task.priority;
-
-    const deleteTask = this.createElement("button", "button delete");
     deleteTask.textContent = "Delete Task";
 
     taskElement.append(deleteTask, taskTitle, taskDescription, taskDueDate, taskPriority);
@@ -118,8 +135,8 @@ export default class Display {
 
   createElement(tag, className = "", id = "") {
     const element = document.createElement(tag);
-    element.className = className;
-    element.id = id;
+    if (className) element.className = className;
+    if (id) element.id = id;
     
     return element;
   }
