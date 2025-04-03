@@ -68,12 +68,17 @@ export default class Display {
       this.handler.task.create(projectId, title, description, dueDate, priority);
       this.taskDialog.close();
     }
-  }
 
+    form.reset();
+  }
+  
   handleFormCancel(form) {
     const formDialog = form.closest(".form-dialog");
     const cancelButton = form.querySelector(".cancel-form");
-    cancelButton.addEventListener("click", () => formDialog.close());
+    cancelButton.addEventListener("click", () => {
+      formDialog.close();
+      form.reset();
+    });
   }
   
   resetContent() {

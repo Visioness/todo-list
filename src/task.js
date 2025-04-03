@@ -4,13 +4,14 @@ export default class Task {
     description = new Date().toDateString(), 
     dueDate = "-",
     priority = "normal",
+    completed = false
   ) {
     this.id = crypto.randomUUID();
     this.title = title;
     this.description = description;
     this.dueDate = dueDate;
     this.priority = priority;
-    this.completed = false;
+    this.completed = completed;
   }
   
   changeTitle(newTitle) {this.title = newTitle;}
