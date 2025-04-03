@@ -1,11 +1,13 @@
 export default class Display {
   constructor(handler) {
     this.handler = handler;
-    this.container = document.querySelector(".container");
-    this.content = this.container.querySelector(".projects");
     this.main = document.querySelector("main");
-    this.projectDialog = document.querySelector("#project-dialog");
-    this.taskDialog = document.querySelector("#task-dialog");
+    this.container = this.main.querySelector(".container");
+    this.content = this.container.querySelector(".projects");
+    this.projectDialog = this.main.querySelector("#project-dialog");
+    this.taskDialog = this.main.querySelector("#task-dialog");
+    this.projectElements = {};
+    this.taskElements = {};
     
     this.handleClickEvents();
     this.handleDialogs();
@@ -80,18 +82,33 @@ export default class Display {
       form.reset();
     });
   }
-  
-  resetContent() {
-    this.content.innerHTML = "";
-  }
 
-  renderProjects(projects) {
-    this.resetContent();
-
+  renderAll(projects) {
     for (const id in projects) {
       const projectElement = this.createProject(projects[id]);
       this.content.append(projectElement);
     }
+  }
+
+  renderProject(project) {
+    const newProjectElement = this.createProject(project);
+    this.content.append(newProjectElement);
+  }
+
+  renderTask(task, projectId) {
+    const newTaskElement = this.createTask(task);
+    const ulElement = this.projectElements[projectId].querySelector(".project-tasks");
+    ulElement.append(newTaskElement);
+  }
+
+  deleteProject(projectId) {
+    const project = this.projectElements[projectId];
+    this.content.removeChild(project);
+  }
+  
+  deleteTask(taskId) {
+    const task = this.taskElements[taskId];
+    task.parentNode.removeChild(task);
   }
   
   createProject(project) {
@@ -114,6 +131,7 @@ export default class Display {
     }
         
     projectElement.append(addTask, deleteProject, projectTitle, projectDescription, projectTasks);
+    this.projectElements[project.id] = projectElement;
     return projectElement;
   }
 
@@ -126,7 +144,6 @@ export default class Display {
     const deleteTask = this.createElement("button", "button delete");
     
     taskElement.dataset.id = task.id;
-
     taskTitle.textContent = task.title;
     taskDescription.textContent = task.description;
     taskDueDate.textContent = task.dueDate;
@@ -134,9 +151,9 @@ export default class Display {
     deleteTask.textContent = "Delete Task";
 
     taskElement.append(deleteTask, taskTitle, taskDescription, taskDueDate, taskPriority);
+    this.taskElements[task.id] = taskElement;
     return taskElement;
   }
-
 
   createElement(tag, className = "", id = "") {
     const element = document.createElement(tag);
