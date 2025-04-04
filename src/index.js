@@ -11,14 +11,16 @@ const handlers = {
     create: (title, description) => {
       const newProject = new Project(title, description);
       projects[newProject.id] = newProject;
-      displayController.renderProject(newProject);
       saveChanges();
+      
+      displayController.renderProject(newProject);
     },
     
     delete: (projectId) => {
       delete projects[projectId];
-      displayController.deleteProject(projectId);
       saveChanges();
+      
+      displayController.deleteProject(projectId);
     }
   },
   
@@ -26,14 +28,27 @@ const handlers = {
     create: (projectId, title, description, dueDate, priority) => {
       const newTask = new Task(title, description, dueDate, priority);
       projects[projectId].addTask(newTask);
-      displayController.renderTask(newTask, projectId);
       saveChanges();
+      
+      displayController.renderTask(newTask, projectId);
     },
     
     delete: (projectId, taskId) => {
       projects[projectId].deleteTask(taskId);
-      displayController.deleteTask(taskId);
       saveChanges();
+
+      displayController.deleteTask(taskId);
+    },
+
+    toggleCompletion: (projectId, taskId) => {
+      const project = projects[projectId];
+      const task = project.tasks[taskId];
+      task.toggleCompletion();
+      project.completed = project.checkCompletion();
+      saveChanges();
+
+      displayController.renderTaskCompletion(taskId, task);
+      displayController.renderProjectCompletion(projectId, project);
     }
   }
 }
@@ -49,7 +64,7 @@ function loadSave() {
   const objects = JSON.parse(projectsJSON);
   for (const projectId in objects) {
     const projectObj = objects[projectId];
-    const newProject = new Project(projectObj.title, projectObj.description);
+    const newProject = new Project(projectObj.title, projectObj.description, projectObj.completed);
     
     for (const taskId in projectObj.tasks) {
       const taskObj = projectObj.tasks[taskId];

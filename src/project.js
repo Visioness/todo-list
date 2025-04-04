@@ -1,8 +1,9 @@
 export default class Project {
-  constructor(title, description = new Date().toDateString()) {
+  constructor(title, description, completed = false) {
     this.id = crypto.randomUUID();
     this.title = title;
     this.description = description;
+    this.completed = completed;
     this.tasks = {};
   }
 
@@ -14,7 +15,7 @@ export default class Project {
     delete this.tasks[taskId];
   }
 
-  checkProjectCompletion() {
-    return Object.values(this.tasks).every(task => task.completed === true)
+  checkCompletion() {
+    return Object.values(this.tasks).every(task => task.completed === true);
   }
 }

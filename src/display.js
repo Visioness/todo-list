@@ -36,6 +36,8 @@ export default class Display {
       } else if (element.classList.contains("delete") && project) {
         // Delete Project
         this.handler.project.delete(projectId);
+      } else if (element.classList.contains("task-completion")) {
+        this.handler.task.toggleCompletion(projectId, taskId);
       }
     });
   }
@@ -110,18 +112,30 @@ export default class Display {
     const task = this.taskElements[taskId];
     task.parentNode.removeChild(task);
   }
+
+  renderTaskCompletion(taskId, task) {
+    const completion = this.taskElements[taskId].querySelector(".task-completion");
+    completion.textContent = task.completed ? "✔️" : "❌";
+  }
+
+  renderProjectCompletion(projectId, project) {
+    const completion = this.projectElements[projectId].querySelector(".project-completion");
+    completion.textContent = project.completed ? "✔️" : "❌";
+  }
   
   createProject(project) {
     const projectElement = this.createElement("div", "project");
     const projectTitle = this.createElement("h3", "project-title");
     const projectDescription = this.createElement("p", "project-description");
     const projectTasks = this.createElement("ul", "project-tasks");
+    const projectCompleted = this.createElement("span", "project-completion");
     const deleteProject = this.createElement("button", "button delete");
     const addTask = this.createElement("button", "button add");
     
     projectElement.dataset.id = project.id;
     projectTitle.textContent = project.title;
     projectDescription.textContent = project.description;
+    projectCompleted.textContent = project.completed ? "✔️" : "❌";
     deleteProject.textContent = "Delete Project";
     addTask.textContent = "Add Task"; 
 
@@ -130,7 +144,7 @@ export default class Display {
       projectTasks.append(task);
     }
         
-    projectElement.append(addTask, deleteProject, projectTitle, projectDescription, projectTasks);
+    projectElement.append(addTask, deleteProject, projectTitle, projectDescription, projectTasks, projectCompleted);
     this.projectElements[project.id] = projectElement;
     return projectElement;
   }
@@ -141,6 +155,7 @@ export default class Display {
     const taskDescription = this.createElement("p", "task-description");
     const taskDueDate = this.createElement("span", "task-due-date");
     const taskPriority = this.createElement("span", "task-priority");
+    const taskCompleted = this.createElement("span", "task-completion");
     const deleteTask = this.createElement("button", "button delete");
     
     taskElement.dataset.id = task.id;
@@ -148,9 +163,10 @@ export default class Display {
     taskDescription.textContent = task.description;
     taskDueDate.textContent = task.dueDate;
     taskPriority.textContent = task.priority;
+    taskCompleted.textContent = task.completed ? "✔️" : "❌";
     deleteTask.textContent = "Delete Task";
 
-    taskElement.append(deleteTask, taskTitle, taskDescription, taskDueDate, taskPriority);
+    taskElement.append(deleteTask, taskTitle, taskDescription, taskDueDate, taskPriority, taskCompleted);
     this.taskElements[task.id] = taskElement;
     return taskElement;
   }
