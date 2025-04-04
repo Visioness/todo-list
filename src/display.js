@@ -1,3 +1,7 @@
+import newProjectIcon from './new-project.svg';
+import newTaskIcon from './new-task.svg';
+import deleteIcon from './delete.svg';
+
 export default class Display {
   constructor(handler) {
     this.handler = handler;
@@ -14,11 +18,11 @@ export default class Display {
   }
   
   handleClickEvents() {
+    let taskId, projectId, activeTask;
     this.container.addEventListener("click", (event) => {
       const element = event.target;
       const task = event.target.closest(".task");
       const project = event.target.closest(".project");
-      let taskId, projectId;
       
       if (task) taskId = task.dataset.id;
       if (project) projectId = project.dataset.id;
@@ -38,6 +42,15 @@ export default class Display {
         this.handler.project.delete(projectId);
       } else if (element.classList.contains("task-completion")) {
         this.handler.task.toggleCompletion(projectId, taskId);
+      } else if (element.className === "task" || element.parentNode.className === "task") {
+        this.shrinkTask(activeTask);
+        if (element.className === "task") {
+          this.expandTask(element);
+          activeTask = element;
+        } else {
+          this.expandTask(element.parentNode);
+          activeTask = element.parentNode;
+        }
       }
     });
   }
@@ -113,6 +126,14 @@ export default class Display {
     task.parentNode.removeChild(task);
   }
 
+  expandTask(task) {
+    task.classList.add("active");
+  }
+
+  shrinkTask(activeTask) {
+    if (activeTask != undefined) activeTask.classList.remove("active");
+  }
+
   renderTaskCompletion(taskId, task) {
     const completion = this.taskElements[taskId].querySelector(".task-completion");
     completion.textContent = task.completed ? "✔️" : "❌";
@@ -136,8 +157,8 @@ export default class Display {
     projectTitle.textContent = project.title;
     projectDescription.textContent = project.description;
     projectCompleted.textContent = project.completed ? "✔️" : "❌";
-    deleteProject.textContent = "Delete Project";
-    addTask.textContent = "Add Task"; 
+    deleteProject.innerHTML = `<img src="${deleteIcon}" alt="Delete Project">`;
+    addTask.innerHTML = `<img src="${newTaskIcon}" alt="Add Task">`;
 
     for (const id in project.tasks) {
       const task = this.createTask(project.tasks[id]);
@@ -162,9 +183,11 @@ export default class Display {
     taskTitle.textContent = task.title;
     taskDescription.textContent = task.description;
     taskDueDate.textContent = task.dueDate;
-    taskPriority.textContent = task.priority;
     taskCompleted.textContent = task.completed ? "✔️" : "❌";
-    deleteTask.textContent = "Delete Task";
+    deleteTask.innerHTML = `<img src="${deleteIcon}" alt="Delete Task">`;
+
+    taskElement.style.backgroundColor = `var(--priority-background-${task.priority})`;
+    taskElement.style.borderColor = `var(--priority-${task.priority})`;
 
     taskElement.append(deleteTask, taskTitle, taskDescription, taskDueDate, taskPriority, taskCompleted);
     this.taskElements[task.id] = taskElement;

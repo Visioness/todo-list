@@ -1,0 +1,231 @@
+:root {
+  --background-primary: rgba(11, 21, 41, 0.9);
+  --background-secondary: rgb(5, 20, 31);
+  --primary: rgb(41, 144, 240);
+  --light: rgb(230, 230, 230);
+  --ascent: rgb(255, 0, 0);
+
+  --background-red: rgb(102, 22, 38);
+  --background-green: rgb(24, 116, 42);
+  --red: rgb(212, 43, 77);
+  --green: rgb(43, 212, 77);
+
+  --button-background: rgb(25, 32, 36);
+  --button-border: rgb(58, 75, 83);
+
+  --priority-high: rgba(253, 107, 136, 0.8);
+  --priority-normal: rgba(253, 136, 107, 0.8);
+  --priority-low: rgba(191, 247, 100, 0.8);
+  --priority-background-high: rgba(253, 107, 136, 0.1);
+  --priority-background-normal: rgba(253, 136, 107, 0.1);
+  --priority-background-low: rgba(191, 247, 100, 0.1);
+
+  --font-sm: 0.75rem;
+  --font-m: 1rem;
+  --font-lg: 1.25rem;
+
+  --padding-sm: 6px;
+  --padding-m: 12px;
+  --padding-lg: 24px
+}
+
+*, *::before, *::after {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+ul,
+li {
+  list-style-type: none;
+}
+
+body {
+  position: relative;
+  height: 100vh;
+  display: grid;
+  grid-template-rows: min-content 1fr min-content;
+  color: var(--light);
+}
+
+header,
+footer {
+  position: sticky;
+  text-align: center;
+  padding: 10px;
+  width: 100%;
+  background-color: var(--background-secondary);
+  color: var(--primary);
+  font-size: var(--lg);
+}
+
+header {
+  top: 0;
+  border-bottom: 2px solid var(--ascent);
+  z-index: 2;
+}
+
+footer {
+  bottom: 0;
+  border-top: 2px solid var(--ascent);
+  z-index: 2;
+}
+
+footer #github-link{
+  color: var(--primary);
+}
+
+/* ------- ------- -------
+  MAIN CONTAINER
+------- ------- ------- */
+
+.container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  background-color: var(--background-primary);
+}
+
+.container-title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+#add-project {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
+}
+
+#add-project > img {
+  width: 30px;
+  height: 30px;
+}
+
+/* ------- ------- -------
+  BUTTONS
+------- ------- ------- */
+
+.button {
+  border: 2px solid var(--button-border);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  background-color: var(--button-background);
+  padding: var(--padding-sm) var(--padding-m);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.button > img {
+  width: 20px;
+  height: 20px;
+  transition: all 0.2s;
+}
+
+.button:hover > img {
+  width: 24px;
+  height: 24px;
+}
+
+/* ------- ------- -------
+  PROJECT AND TASK MODELS
+------- ------- ------- */
+
+.projects {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.project {
+  background-color: var(--background-secondary);
+  border: 2px solid var(--light);
+  border-radius: 20px;
+  padding: 10px;
+  display: grid;
+  gap: 10px;
+  align-items: center;
+  grid-template-columns: 1fr repeat(3, max-content);
+  grid-template-rows: repeat(3, max-content);
+  grid-template-areas: 
+    "project-title project-completion add-task delete-project"
+    "project-desc project-desc project-desc project-desc"
+    "project-tasks project-tasks project-tasks project-tasks";
+}
+
+.project-title {
+  grid-area: project-title;
+}
+
+.project-description {
+  grid-area: project-desc;
+}
+
+.project-completion {
+  grid-area: project-completion;
+}
+
+.project-tasks {
+  grid-area: project-tasks;
+  padding: 10px;
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.project > .button.add {
+  grid-area: add-task;
+}
+
+.project > .button.delete {
+  grid-area: delete-project;
+}
+
+.task {
+  border: 2px solid rgb(255, 255, 255);
+  border-radius: 10px;
+  display: grid;
+  align-items: center;
+  justify-items: start;
+  gap: 0 10px;
+  padding: 4px 8px;
+  grid-template-columns: 2fr 1fr repeat(2, max-content);
+  grid-template-rows: 1fr;
+}
+
+.task.active {
+  grid-template-rows: 1fr 1fr;
+  gap: 10px;
+}
+
+.task-title {
+  grid-area: 1 / 1;
+}
+
+.task-due-date {
+  grid-area: 1 / 2;
+}
+
+.task-completion {
+  grid-area: 1 / 3;
+}
+
+.task > .button.delete {
+  grid-area: 1 / 4;
+}
+
+.task-description,
+.task.priority {
+  display: none;
+}
+
+.task.active > .task-description,
+.task.active > .task-priority {
+  display: block;
+}

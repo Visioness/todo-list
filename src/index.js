@@ -1,6 +1,9 @@
+import "./styles.css";
+
 import Project from "./project.js";
 import Task from "./task.js";
 import Display from "./display.js";
+
 
 let displayController;
 const projects = {};

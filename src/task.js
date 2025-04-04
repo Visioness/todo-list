@@ -3,7 +3,7 @@ export default class Task {
     title,
     description = new Date().toDateString(), 
     dueDate = "-",
-    priority = "normal",
+    priority,
     completed = false
   ) {
     this.id = crypto.randomUUID();
@@ -13,14 +13,6 @@ export default class Task {
     this.priority = priority;
     this.completed = completed;
   }
-  
-  changeTitle(newTitle) {this.title = newTitle;}
-  
-  changeDescription(newDescription) {this.description = newDescription;}
-  
-  changeDueDate(newDate) {this.dueDate = newDate;}
-  
-  changePriority(newPriority) {this.priority = newPriority;}
 
   toggleCompletion() {this.completed = !this.completed;}
 }
