@@ -8,15 +8,14 @@
 <body>
   <header>
     <h1>To-Do List</h1>
+    <button type="button" class="button add" id="add-project">
+      <img width="40" height="40" src="./new-project.svg" alt="Add Project">
+      <span>Add Project</span>
+    </button>
   </header>
-
+  
   <main>
     <div class="container">
-      <h2 class="container-title">Projects</h2>
-      <button type="button" class="button add" id="add-project">
-        <img src="./new-project.svg" alt="Add Project">
-      </button>
-      
       <div class="projects">
 
       </div>
@@ -64,7 +63,7 @@
 
         <div class="form-group">
           <label for="task-priority">Priority:</label>
-          <input type="text" id="task-priority" name="priority">
+          <input type="range" id="task-priority" name="priority" min="0" max="2" step="1">
         </div>
 
         <div class="form-actions">

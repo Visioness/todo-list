@@ -2,7 +2,7 @@ export default class Project {
   constructor(title, description, completed = false) {
     this.id = crypto.randomUUID();
     this.title = title;
-    this.description = description;
+    this.description = description || "Project Description";
     this.completed = completed;
     this.tasks = {};
   }

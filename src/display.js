@@ -1,4 +1,5 @@
-import newProjectIcon from './new-project.svg';
+import checkIcon from './check.svg';
+import uncheckIcon from './uncheck.svg';
 import newTaskIcon from './new-task.svg';
 import deleteIcon from './delete.svg';
 
@@ -12,6 +13,7 @@ export default class Display {
     this.taskDialog = this.main.querySelector("#task-dialog");
     this.projectElements = {};
     this.taskElements = {};
+    this.priorityTable = ["low", "normal", "high"];
     
     this.handleClickEvents();
     this.handleDialogs();
@@ -19,40 +21,50 @@ export default class Display {
   
   handleClickEvents() {
     let taskId, projectId, activeTask;
+    
+    const actionMap = {
+      'add-task-button': () => {
+        this.taskDialog.querySelector("input[name='project-id']").value = projectId;
+        this.taskDialog.showModal();
+      },
+      'delete-task-button': () => this.handler.task.delete(projectId, taskId),
+      'delete-project-button': () => this.handler.project.delete(projectId),
+      'task-completion-button': () => this.handler.task.toggleCompletion(projectId, taskId),
+      'task-info': () => {
+        this.shrinkTask(activeTask);
+        const info = event.target.closest('.task-info');
+        this.expandTask(info);
+        activeTask = info;
+      },
+      'close-active-task': () => this.shrinkTask(activeTask)
+    };
+    
     this.container.addEventListener("click", (event) => {
       const element = event.target;
-      const task = event.target.closest(".task");
-      const project = event.target.closest(".project");
+      const task = element.closest(".task");
+      const project = element.closest(".project");
       
       if (task) taskId = task.dataset.id;
       if (project) projectId = project.dataset.id;
-
-      if (element.id === "add-project") {
-        // Add Project
-        this.projectDialog.showModal();
-      } else if (element.classList.contains("add") && project) {
-        // Add Task
-        this.taskDialog.querySelector("input[name='project-id']").value = projectId;
-        this.taskDialog.showModal();
-      } else if (element.classList.contains("delete") && task) {
-        // Delete Task
-        this.handler.task.delete(projectId, taskId);
-      } else if (element.classList.contains("delete") && project) {
-        // Delete Project
-        this.handler.project.delete(projectId);
-      } else if (element.classList.contains("task-completion")) {
-        this.handler.task.toggleCompletion(projectId, taskId);
-      } else if (element.className === "task" || element.parentNode.className === "task") {
-        this.shrinkTask(activeTask);
-        if (element.className === "task") {
-          this.expandTask(element);
-          activeTask = element;
-        } else {
-          this.expandTask(element.parentNode);
-          activeTask = element.parentNode;
-        }
+      
+      // Determine which action to perform
+      const action = this.determineAction(element);
+      if (action && actionMap[action]) {
+        actionMap[action]();
       }
     });
+
+    document.querySelector("#add-project").addEventListener("click", () => this.projectDialog.showModal());
+  }
+
+  determineAction(element) {
+    if (element.classList.contains("add") || element.closest(".add")) return 'add-task-button';
+    if (element.classList.contains("delete") && element.closest(".task")) return 'delete-task-button';
+    if (element.classList.contains("delete") && element.closest(".project")) return 'delete-project-button';
+    if (element.classList.contains("task-completion") || element.closest(".task-completion")) return 'task-completion-button';
+    if (element.classList.contains("active") || element.closest(".active")) return 'close-active-task';
+    if (element.classList.contains("task-info") || element.closest(".task-info")) return 'task-info';
+    return null;
   }
   
   handleDialogs() {
@@ -136,12 +148,14 @@ export default class Display {
 
   renderTaskCompletion(taskId, task) {
     const completion = this.taskElements[taskId].querySelector(".task-completion");
-    completion.textContent = task.completed ? "✔️" : "❌";
+    const svg = task.completed ? checkIcon : uncheckIcon; 
+    completion.innerHTML = `<img width="24" height="24" src="${svg}" alt="Task Completion">`;
   }
 
   renderProjectCompletion(projectId, project) {
     const completion = this.projectElements[projectId].querySelector(".project-completion");
-    completion.textContent = project.completed ? "✔️" : "❌";
+    const svg = project.completed ? checkIcon : uncheckIcon; 
+    completion.innerHTML = `<img width="24" height="24" src="${svg}" alt="Project Completion">`;
   }
   
   createProject(project) {
@@ -149,47 +163,62 @@ export default class Display {
     const projectTitle = this.createElement("h3", "project-title");
     const projectDescription = this.createElement("p", "project-description");
     const projectTasks = this.createElement("ul", "project-tasks");
-    const projectCompleted = this.createElement("span", "project-completion");
+    const projectCompleted = this.createElement("button", "button project-completion");
     const deleteProject = this.createElement("button", "button delete");
     const addTask = this.createElement("button", "button add");
     
     projectElement.dataset.id = project.id;
     projectTitle.textContent = project.title;
     projectDescription.textContent = project.description;
-    projectCompleted.textContent = project.completed ? "✔️" : "❌";
-    deleteProject.innerHTML = `<img src="${deleteIcon}" alt="Delete Project">`;
-    addTask.innerHTML = `<img src="${newTaskIcon}" alt="Add Task">`;
+    
+    const svg = project.completed ? checkIcon : uncheckIcon; 
+    projectCompleted.innerHTML = `<img width="24" height="24" src="${svg}" alt="Project Completion">`;
+
+    deleteProject.innerHTML = `
+      <img width="24" height="24" src="${deleteIcon}" alt="Delete Project">
+      <span>Delete Project</span>
+    `;
+    addTask.innerHTML = `
+      <img width="24" height="24" src="${newTaskIcon}" alt="Add Task">
+      <span>Add Task</span>
+    `;
 
     for (const id in project.tasks) {
       const task = this.createTask(project.tasks[id]);
       projectTasks.append(task);
     }
         
-    projectElement.append(addTask, deleteProject, projectTitle, projectDescription, projectTasks, projectCompleted);
+    projectElement.append(projectCompleted, projectTitle, projectDescription, projectTasks, addTask, deleteProject);
     this.projectElements[project.id] = projectElement;
     return projectElement;
   }
 
   createTask(task) {
     const taskElement = this.createElement("li", "task");
+    const taskInfo = this.createElement("div", "task-info");
     const taskTitle = this.createElement("h4", "task-title");
     const taskDescription = this.createElement("p", "task-description");
     const taskDueDate = this.createElement("span", "task-due-date");
-    const taskPriority = this.createElement("span", "task-priority");
-    const taskCompleted = this.createElement("span", "task-completion");
+    const taskCompleted = this.createElement("button", "button task-completion");
     const deleteTask = this.createElement("button", "button delete");
     
     taskElement.dataset.id = task.id;
     taskTitle.textContent = task.title;
     taskDescription.textContent = task.description;
     taskDueDate.textContent = task.dueDate;
-    taskCompleted.textContent = task.completed ? "✔️" : "❌";
-    deleteTask.innerHTML = `<img src="${deleteIcon}" alt="Delete Task">`;
+    deleteTask.innerHTML = `
+      <img width="24" height="24" src="${deleteIcon}" alt="Delete Task">
+      <span>Delete Task</span>
+    `;
+    
+    const svg = task.completed ? checkIcon : uncheckIcon; 
+    taskCompleted.innerHTML = `<img width="24" height="24" src="${svg}" alt="Task Completion">`;
+    
+    taskInfo.style.backgroundColor = `var(--priority-background-${this.priorityTable[task.priority]})`;
+    taskInfo.style.borderColor = `var(--priority-${this.priorityTable[task.priority]})`;
 
-    taskElement.style.backgroundColor = `var(--priority-background-${task.priority})`;
-    taskElement.style.borderColor = `var(--priority-${task.priority})`;
-
-    taskElement.append(deleteTask, taskTitle, taskDescription, taskDueDate, taskPriority, taskCompleted);
+    taskInfo.append(taskTitle, taskDueDate, deleteTask, taskDescription);
+    taskElement.append(taskCompleted, taskInfo);
     this.taskElements[task.id] = taskElement;
     return taskElement;
   }

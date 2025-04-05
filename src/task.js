@@ -1,15 +1,9 @@
 export default class Task {
-  constructor(
-    title,
-    description = new Date().toDateString(), 
-    dueDate = "-",
-    priority,
-    completed = false
-  ) {
+  constructor(title, description, dueDate, priority, completed = false) {
     this.id = crypto.randomUUID();
     this.title = title;
-    this.description = description;
-    this.dueDate = dueDate;
+    this.description = description || "Task Description";
+    this.dueDate = dueDate || new Date().toDateString();
     this.priority = priority;
     this.completed = completed;
   }

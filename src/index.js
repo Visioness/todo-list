@@ -7,7 +7,6 @@ import Display from "./display.js";
 
 let displayController;
 const projects = {};
-loadSave();
 
 const handlers = {
   project: {
@@ -39,17 +38,17 @@ const handlers = {
     delete: (projectId, taskId) => {
       projects[projectId].deleteTask(taskId);
       saveChanges();
-
+      
       displayController.deleteTask(taskId);
     },
-
+    
     toggleCompletion: (projectId, taskId) => {
       const project = projects[projectId];
       const task = project.tasks[taskId];
       task.toggleCompletion();
       project.completed = project.checkCompletion();
       saveChanges();
-
+      
       displayController.renderTaskCompletion(taskId, task);
       displayController.renderProjectCompletion(projectId, project);
     }
@@ -62,13 +61,15 @@ function saveChanges() {
 
 function loadSave() {
   const projectsJSON = localStorage.getItem("projects");
+  const start = performance.now();
   if (!projectsJSON) return;
   
   const objects = JSON.parse(projectsJSON);
   for (const projectId in objects) {
     const projectObj = objects[projectId];
     const newProject = new Project(projectObj.title, projectObj.description, projectObj.completed);
-    
+    displayController.renderProject(newProject);
+
     for (const taskId in projectObj.tasks) {
       const taskObj = projectObj.tasks[taskId];
       const newTask = new Task(
@@ -79,6 +80,7 @@ function loadSave() {
         taskObj.completed
       );
       newProject.tasks[newTask.id] = newTask;
+      displayController.renderTask(newTask, newProject.id);
     }
     
     projects[newProject.id] = newProject;
@@ -86,4 +88,4 @@ function loadSave() {
 }
 
 displayController = new Display(handlers);
-displayController.renderAll(projects);
+loadSave();
